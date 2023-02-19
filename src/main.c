@@ -25,7 +25,7 @@ void mysleep(void) {
 
 int main(void) {
     // Uncomment when most things are working
-    // autotest();
+    autotest();
     
     initb();
     initc();
@@ -50,7 +50,10 @@ int main(void) {
  *
  */
 void initb() {
-
+    RCC -> AHBENR |= RCC_AHBENR_GPIOBEN;
+    GPIOB -> MODER &= ~0x00ff0000;
+    GPIOB -> MODER |= 0x00550000; // set pins 8-11 to 01 for output
+    GPIOB -> MODER &= ~0x00000303; // set pins 0 and 4 to 00 for input
 }
 
 /**
@@ -60,7 +63,12 @@ void initb() {
  *
  */
 void initc() {
-
+    RCC -> AHBENR |= RCC_AHBENR_GPIOCEN;
+    GPIOC -> MODER &= ~0x0000ff00;
+    GPIOC -> MODER |= 0x00005500; // sets pins 4-7 to 01 for output
+    GPIOC -> MODER &= ~0x000000ff; // sets pins 0-3 to 00 for input
+    GPIOC -> PUPDR &= ~0x000000ff; // sets pins 0-3 to 00 to use pull down resistors
+    GPIOC -> PUPDR |= 0x000000aa; // sets pins 0-3 to 01 to use pull down resistors
 }
 
 /**
@@ -72,6 +80,11 @@ void initc() {
  */
 void setn(int32_t pin_num, int32_t val) {
 
+    if(val == 0) {
+        GPIOB -> BRR = (1 << pin_num);
+    } else {
+        GPIOB -> BSRR = (1 << pin_num);
+    }
 }
 
 /**
@@ -81,7 +94,7 @@ void setn(int32_t pin_num, int32_t val) {
  * @return int32_t  : 1: the pin is high; 0: the pin is low
  */
 int32_t readpin(int32_t pin_num) {
-
+    return ((GPIOB -> IDR) & (1 << pin_num)) ? 0x1 : 0x0;
 }
 
 /**
